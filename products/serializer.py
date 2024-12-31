@@ -13,16 +13,17 @@ class ProductSerializer(serializers.ModelSerializer):
 
     # to check if current-user is the one who created the product or not:
     def validate(self, attrs):
-        owner = self.instance.created_by
         user = self.context.get('user')
         name = attrs.get('name')
         price = int(attrs.get('price'))
 
-        if owner != user:
-            raise serializers.ValidationError(
-                {'detail': 'شما مجاز به انجام این عملیات نیستید'},
-                code='permission_denied'
-            )
+        if self.instance:
+            owner = self.instance.created_by
+            if owner != user:
+                raise serializers.ValidationError(
+                    {'detail': 'شما مجاز به انجام این عملیات نیستید'},
+                    code='permission_denied'
+                )
 
         elif Product.objects.filter(name=name).exists():
             raise serializers.ValidationError('این محصول قبلا ثبت شده است')
